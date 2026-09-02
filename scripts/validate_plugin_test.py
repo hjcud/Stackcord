@@ -34,7 +34,7 @@ class PluginContractTest(unittest.TestCase):
         for case in cases:
             skill = ROOT / "skills" / case["skill"] / "SKILL.md"
             self.assertTrue(skill.is_file(), case["skill"])
-            text = skill.read_text()
+            text = skill.read_text(encoding="utf-8")
             self.assertIn(f"name: {case['skill']}", text)
             self.assertIn(case["domain_command"], text)
             self.assertIn("stackcord status --json", text)
@@ -44,7 +44,7 @@ class PluginContractTest(unittest.TestCase):
                 text.index(case["domain_command"]),
             )
 
-    def test_behavior_surface_has_five_non_overlapping_skills(self):
+    def test_behavior_surface_has_six_focused_skills(self):
         cases = json.loads((ROOT / "testdata" / "plugin" / "behavior.json").read_text())
         self.assertEqual(
             {
@@ -53,9 +53,23 @@ class PluginContractTest(unittest.TestCase):
                 "plan-project-work",
                 "coordinate-project-work",
                 "recover-and-release-project",
+                "use-git-conventions",
             },
             {case["skill"] for case in cases},
         )
+
+    def test_git_convention_skill_persists_and_reuses_repository_rules(self):
+        text = (ROOT / "skills" / "use-git-conventions" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(".harness/git-conventions.yaml", text)
+        self.assertIn("schema_version: 1", text)
+        for operation in ("branch", "commit", "pull request", "issue"):
+            self.assertIn(operation, text.lower())
+        self.assertIn("CONTRIBUTING.md", text)
+        self.assertIn("AGENTS.md", text)
+        self.assertIn("external write", text)
 
     def test_work_planning_is_proportional_not_a_universal_gate(self):
         text = (ROOT / "skills" / "plan-project-work" / "SKILL.md").read_text(

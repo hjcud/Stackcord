@@ -17,6 +17,7 @@ EXPECTED_SKILLS = {
     "plan-project-work",
     "coordinate-project-work",
     "recover-and-release-project",
+    "use-git-conventions",
 }
 
 

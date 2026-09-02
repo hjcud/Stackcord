@@ -23,6 +23,7 @@ REQUIRED_SCENARIOS = {
     "local-only-work",
     "release-candidate-mismatch",
     "current-tool-selection",
+    "repository-git-conventions",
 }
 REQUIRED_SKILLS = {
     "start-project",
@@ -30,6 +31,7 @@ REQUIRED_SKILLS = {
     "plan-project-work",
     "coordinate-project-work",
     "recover-and-release-project",
+    "use-git-conventions",
 }
 
 

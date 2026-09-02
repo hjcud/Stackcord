@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kcrmin/Stackcord/cli/internal/gitx"
+	"github.com/kcrmin/Stackcord/cli/internal/convention"
 	"github.com/kcrmin/Stackcord/cli/internal/schema"
 )
 
@@ -450,7 +450,7 @@ func validateSnapshotSet(value SnapshotSet) error {
 			return fmt.Errorf("claim and work IDs must be unique")
 		}
 		claims[claim.ID], work[claim.WorkID] = true, true
-		if !coordinationDigestPattern.MatchString(claim.DefinitionFingerprint) || strings.TrimSpace(claim.Owner) == "" || strings.TrimSpace(claim.Repository) == "" || gitx.ValidateBranch(claim.Branch) != nil {
+		if !coordinationDigestPattern.MatchString(claim.DefinitionFingerprint) || strings.TrimSpace(claim.Owner) == "" || strings.TrimSpace(claim.Repository) == "" || convention.ValidateBranchIdentity(claim.Branch) != nil {
 			return fmt.Errorf("claim identity, fingerprint, owner, repository, or branch is invalid")
 		}
 		switch claim.Status {

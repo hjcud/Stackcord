@@ -11,11 +11,11 @@ codex plugin marketplace add kcrmin/Stackcord --ref v1.0.0
 codex plugin add stackcord@stackcord
 ```
 
-설치된 snapshot에서 다섯 Stackcord Skill과 lifecycle hook을 불러오도록 설치 후 새 Codex 대화를 시작합니다.
+설치된 snapshot에서 여섯 Stackcord Skill과 lifecycle hook을 불러오도록 설치 후 새 Codex 대화를 시작합니다.
 
 ## 검증된 release bundle 설치
 
-현재 platform용 Plugin zip과 `checksums.txt`를 함께 내려받아 SHA-256을 확인하고 압축을 풉니다. Bundle에는 `.agents/plugins/marketplace.json`, 5개 Skill, lifecycle hook, project template, macOS·Windows bootstrap script, `distribution/platform.json`이 들어 있습니다. Platform record는 Plugin version을 맞는 CLI asset과 checksum URL에 연결합니다.
+현재 platform용 Plugin zip과 `checksums.txt`를 함께 내려받아 SHA-256을 확인하고 압축을 풉니다. Bundle에는 `.agents/plugins/marketplace.json`, 6개 Skill, lifecycle hook, project template, macOS·Windows bootstrap script, `distribution/platform.json`이 들어 있습니다. Platform record는 Plugin version을 맞는 CLI asset과 checksum URL에 연결합니다.
 
 AI에게 “이 검증된 bundle을 local에 설치해줘”라고 말하면 platform record를 확인하고 checksum-first bootstrap을 사용할 수 있습니다. 압축을 푼 Plugin을 Codex CLI로 설치할 때는 해당 directory를 local marketplace로 추가하고 표시된 Plugin을 설치합니다.
 

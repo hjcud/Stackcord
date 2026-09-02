@@ -63,10 +63,20 @@ stackcord release verify --root . --json
             "docs/guides/task-management-ko.md": "Git-local",
         })
 
-        self.assertTrue(any("five Skills" in error for error in errors))
+        self.assertTrue(any("six Skills" in error for error in errors))
         self.assertTrue(any("provider truth" in error for error in errors))
         self.assertTrue(any("AI-free Git conventions" in error for error in errors))
         self.assertTrue(any("generated context location" in error for error in errors))
+
+    def test_public_contract_names_git_convention_configuration(self):
+        documents = {
+            "README.md": " ".join(validate_docs.SKILL_NAMES),
+            "README.ko.md": " ".join(validate_docs.SKILL_NAMES),
+        }
+
+        errors = validate_docs.public_contract_errors(documents)
+
+        self.assertTrue(any("Git convention" in error for error in errors))
 
     def test_readmes_keep_maintainer_inventories_in_detailed_guides(self):
         root = validate_docs.ROOT

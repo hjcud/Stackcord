@@ -75,6 +75,7 @@ func TestGeneratedRepoLocalGuidanceIsFlexibleAndMatchesPluginTemplate(t *testing
 	for _, required := range []string{
 		"natural-language", "initial product request", "A/B/C", "free-form", "small private local edit", "selected task source", "Git work reservation",
 		"service purpose", "business rules", "context audit", "strict release", "product authority", "proposal", "governance check", "Git user.name",
+		".harness/git-conventions.yaml", "branch, commit, pull request, or issue",
 	} {
 		require.Contains(t, skill+fallback, required)
 	}

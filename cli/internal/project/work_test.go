@@ -1,6 +1,8 @@
 package project_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -23,6 +25,32 @@ func TestStartWorkCreatesClaimAndBranchCheckpoint(t *testing.T) {
 	require.Len(t, plan.Files, 2)
 	require.Equal(t, ".harness/work/claims/claim.01JACCOUNT.yaml", plan.Files[0].Path)
 	require.Contains(t, string(plan.Files[0].Content), "contract.identity.recovery.v1")
+}
+
+func TestStartWorkUsesRepositoryGitConvention(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, ".harness"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(root, ".harness", "git-conventions.yaml"), []byte("schema_version: 1\nbranch:\n  format: \"{type}/{issue}-{description}\"\n  types: [feat, fix]\n"), 0o600))
+	now := time.Now().UTC()
+
+	plan := project.StartWork(project.StartWorkRequest{
+		Root: root, WorkID: "work.custom-branch", ClaimID: "claim.custom-branch", Owner: "alex",
+		Branch: "feat/OPS-42-account-recovery", ExpiresAt: now.Add(time.Hour),
+		Candidate: policy.Candidate{Repository: "repository.root", Now: now},
+		Snapshot: contextpkg.Snapshot{Index: map[string]contextpkg.IndexEntry{}},
+	})
+
+	require.Empty(t, plan.Blockers)
+	require.Len(t, plan.Files, 2)
+
+	rejected := project.StartWork(project.StartWorkRequest{
+		Root: root, WorkID: "work.wrong-branch", ClaimID: "claim.wrong-branch", Owner: "alex",
+		Branch: "feature/account-recovery", ExpiresAt: now.Add(time.Hour),
+		Candidate: policy.Candidate{Repository: "repository.root", Now: now},
+		Snapshot: contextpkg.Snapshot{Index: map[string]contextpkg.IndexEntry{}},
+	})
+	require.Equal(t, "work.branch-invalid", rejected.Blockers[0].Code)
+	require.Contains(t, rejected.Blockers[0].Message, "{type}/{issue}-{description}")
 }
 
 func TestStartWorkBlocksSharedContractConflict(t *testing.T) {

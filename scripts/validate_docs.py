@@ -23,6 +23,7 @@ SKILL_NAMES = (
     "plan-project-work",
     "coordinate-project-work",
     "recover-and-release-project",
+    "use-git-conventions",
 )
 
 
@@ -53,13 +54,15 @@ def public_contract_errors(documents: dict[str, str]) -> list[str]:
     for path in ("README.md", "README.ko.md"):
         text = documents.get(path, "")
         if not all(name in text for name in SKILL_NAMES):
-            errors.append(f"{path} must name the same five Skills")
+            errors.append(f"{path} must name the same six Skills")
         if not all(path_token in text for path_token in (
             ".agents/skills/use-project-harness/", ".harness/work/provider.yaml", ".harness/governance.yaml", "contracts/registry.yaml",
         )):
             errors.append(f"{path} generated project paths differ from the tested fixture")
         if ".harness/local/context/" not in text or ".harness/state/context-index.json" in text:
             errors.append(f"{path} must describe the ignored generated context location")
+        if ".harness/git-conventions.yaml" not in text or "use-git-conventions" not in text:
+            errors.append(f"{path} must describe the repository Git convention configuration and Skill")
         if not all(token in text for token in ("```mermaid", "ui/", "frontend/", "strict", "ui-workspace")):
             errors.append(f"{path} must show the concise UI-to-release product flow")
 
@@ -231,7 +234,7 @@ def validate() -> list[str]:
     skill_names = sorted(path.name for path in (ROOT / "skills").iterdir() if (path / "SKILL.md").is_file())
     expected_skills = sorted(SKILL_NAMES)
     if skill_names != expected_skills:
-        errors.append(f"expected exactly five non-overlapping skills, found: {', '.join(skill_names)}")
+        errors.append(f"expected exactly six focused skills, found: {', '.join(skill_names)}")
 
     example_files = (
         ".agents/skills/use-project-harness/SKILL.md",

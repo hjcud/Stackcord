@@ -33,6 +33,30 @@ Issue 담당자 지정 자체는 배타적 lock이 아닙니다. GitHub는 여�
 
 GitHub Issues를 고정 기본값으로 두지 않으며 문서에 Jira나 Beads 이름이 있다는 이유로 활성화하지 않습니다. AI는 설치된 connector와 CLI를 먼저 감지하고, 선택이 필요한 시점의 공식 유지보수·보안 정보를 확인하며, 현실적인 후보 두세 개와 trade-off를 설명한 뒤 사용자가 고른 것만 연결합니다.
 
+## 저장소 Git convention 유지
+
+Branch, commit, PR, issue convention을 Stackcord에 한 번 알려줍니다. `use-git-conventions` Skill은 먼저 `CONTRIBUTING.md`, `AGENTS.md`, 기존 PR·issue template을 확인합니다. 규칙이 일치하면 정규화한 내용만 `.harness/git-conventions.yaml`에 저장하고 이후 Git 작업 전에 다시 사용합니다.
+
+```yaml
+schema_version: 1
+branch:
+  format: "{type}/{issue}-{description}"
+  types: [feat, fix]
+commit:
+  title_format: "{type}({scope}): {subject}"
+  types: [feat, fix]
+  scopes: [api, ui]
+  max_length: 72
+pull_request:
+  title_format: "[{issue}] {title}"
+  required_sections: [Summary, Test plan]
+issue:
+  title_format: "[{type}] {title}"
+  required_sections: [Problem, Acceptance]
+```
+
+이 파일은 선택 사항입니다. 파일이 없으면 기존 Stackcord branch 동작을 유지하며 AI가 commit·PR·issue 규칙을 임의로 만들지 않습니다. 저장소 convention은 안전한 Git ref 검사를 완화하거나 issue·PR 외부 쓰기를 승인하지 않습니다. 기여 문서끼리 충돌하면 AI가 충돌 내용을 알리고 어떤 규칙을 적용할지 묻습니다.
+
 ## 저장되는 내용 이해
 
 - `.harness/work/definitions/<work-id>.yaml`은 commit되는 실행 checklist와 의미 범위입니다.
@@ -53,4 +77,4 @@ Clone은 work definition, mapping, contract, 결정, workspace topology, remote 
 
 Provider를 사용할 수 없으면 AI는 unknown이라고 보고하고 재연결 또는 단일 provider를 바꾸는 명시적 결정을 제안합니다. Status를 몰래 Git-local로 복사하지 않습니다. 외부 provider 갱신은 성공했지만 Git 선점 compare-and-swap race에서 지면 branch 작업을 시작하지 않고 ownership과 충돌 범위를 새로 읽습니다. 외부 status와 의미 coordination이 다르면 정확한 revision이 맞을 때까지 integration과 release를 차단합니다.
 
-Branch, commit, pull request는 `feature/account-recovery`, `feat(account): add recovery challenge`, “Add account recovery flow” 같은 팀의 일반 convention을 사용합니다. AI, agent, model, tool 이름을 넣지 않습니다.
+Branch, commit, pull request는 `feature/account-recovery`, `feat(account): add recovery challenge`, “Add account recovery flow” 같은 팀의 저장된 convention을 사용합니다. AI, agent, model, tool 이름을 넣지 않습니다.

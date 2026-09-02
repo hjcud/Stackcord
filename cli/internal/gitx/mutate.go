@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kcrmin/Stackcord/cli/internal/convention"
 	"github.com/kcrmin/Stackcord/cli/internal/domain"
 	"github.com/kcrmin/Stackcord/cli/internal/schema"
 )
@@ -39,8 +40,11 @@ type CreateWorktreeRequest struct {
 // CreateWorktree applies one allow-listed Git worktree mutation and verifies its exact postcondition.
 func CreateWorktree(ctx context.Context, request CreateWorktreeRequest) domain.Result {
 	result := gitMutationResult("git.worktree-create", "worktree-create-"+strings.ReplaceAll(request.Branch, "/", "-"))
-	if ValidateBranch(request.Branch) != nil || !safeBaseRef(request.Base) {
-		return blockGitMutation(result, "git.worktree-request-invalid", "A conventional branch and safe base ref are required.")
+	if err := convention.ValidateBranch(request.Root, request.Branch); err != nil {
+		return blockGitMutation(result, "git.worktree-branch-invalid", err.Error())
+	}
+	if !safeBaseRef(request.Base) {
+		return blockGitMutation(result, "git.worktree-request-invalid", "A safe base ref is required.")
 	}
 	state, err := Inspect(ctx, request.Root)
 	if err != nil {
@@ -168,7 +172,7 @@ func SyncPinnedSubmodules(ctx context.Context, root string, paths []string) doma
 }
 
 func (git runner) mutate(ctx context.Context, directory string, kind mutationKind, args ...string) (string, error) {
-	if err := validateMutationArgs(kind, args); err != nil {
+	if err := validateMutationArgs(directory, kind, args); err != nil {
 		return "", err
 	}
 	executable, err := exec.LookPath("git")
@@ -199,7 +203,7 @@ func (git runner) mutate(ctx context.Context, directory string, kind mutationKin
 	return strings.TrimSpace(stdout.String()), nil
 }
 
-func validateMutationArgs(kind mutationKind, args []string) error {
+func validateMutationArgs(directory string, kind mutationKind, args []string) error {
 	for _, argument := range args {
 		if strings.ContainsAny(argument, "\x00\r\n") {
 			return fmt.Errorf("unsafe Git mutation argument")
@@ -207,7 +211,7 @@ func validateMutationArgs(kind mutationKind, args []string) error {
 	}
 	switch kind {
 	case mutationWorktree:
-		if len(args) != 6 || args[0] != "worktree" || args[1] != "add" || args[2] != "-b" || ValidateBranch(args[3]) != nil || !safeBaseRef(args[5]) || !filepath.IsAbs(args[4]) {
+		if len(args) != 6 || args[0] != "worktree" || args[1] != "add" || args[2] != "-b" || convention.ValidateBranch(directory, args[3]) != nil || !safeBaseRef(args[5]) || !filepath.IsAbs(args[4]) {
 			return fmt.Errorf("invalid worktree mutation")
 		}
 	case mutationSubmodule:
