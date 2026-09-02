@@ -44,10 +44,12 @@ func Check(ctx context.Context, root, observationPath string, now time.Time) Rep
 	if err != nil {
 		report.Status = Unknown
 		code := "governance.approval-unknown"
+		message := "A fresh live Git review observation is required."
 		if !errors.Is(err, os.ErrNotExist) {
 			code = "governance.observation-invalid"
+			message = err.Error()
 		}
-		report.Issues = append(report.Issues, issue(code, err.Error()))
+		report.Issues = append(report.Issues, issue(code, message))
 		return report
 	}
 	report.ApprovalRevision = observation.ReviewID + ":" + observation.ReviewRevision

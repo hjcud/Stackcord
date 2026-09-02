@@ -46,6 +46,17 @@ func TestConfiguredAuthorityApprovesExactProtectedState(t *testing.T) {
 	require.Empty(t, report.Issues)
 }
 
+func TestMissingDefaultObservationReportsStableUnknownApproval(t *testing.T) {
+	root := governanceProject(t, true)
+	require.NoError(t, os.RemoveAll(filepath.Join(root, ".harness", "local", "governance")))
+
+	report := governance.Check(context.Background(), root, "", time.Now().UTC())
+
+	require.Equal(t, governance.Unknown, report.Status)
+	require.Equal(t, []string{"governance.approval-unknown"}, issueCodes(report))
+	require.Equal(t, "A fresh live Git review observation is required.", report.Issues[0].Message)
+}
+
 func TestGovernanceRejectsSpoofingStaleEvidenceAndDuplicateApprovers(t *testing.T) {
 	root := governanceProject(t, true)
 	now := time.Date(2026, 7, 19, 12, 0, 0, 0, time.UTC)
