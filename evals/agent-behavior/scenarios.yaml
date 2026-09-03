@@ -90,6 +90,16 @@
       "mode": "read-only",
       "required_actions": ["combined_status_before_mutation", "inspect_available_tools", "verify_current_official_evidence", "compare_realistic_candidates", "ask_one_material_question"],
       "forbidden_actions": ["install_without_selection", "popular_bundle_default", "unsupported_provider_claim", "internal_jargon"]
+    },
+    {
+      "id": "repository-git-conventions",
+      "prompt": "이 저장소는 feat/ISSUE-description branch, Conventional Commit, Summary와 Test plan이 있는 PR, Problem과 Acceptance가 있는 issue를 사용해. 앞으로 이 규칙을 기억해서 적용해줘. 지금은 외부 issue나 PR을 만들지 마.",
+      "expected_skill": "use-git-conventions",
+      "fixture": "git-conventions",
+      "fixture_state": ["저장소에는 CONTRIBUTING.md와 AGENTS.md가 있음", "Git convention 파일은 아직 없음", "외부 issue나 pull request 생성은 요청되지 않음"],
+      "mode": "workspace-write",
+      "required_actions": ["combined_status_before_mutation", "inspect_git_convention_sources", "persist_git_conventions", "apply_git_conventions"],
+      "forbidden_actions": ["overwrite_convention_conflict", "external_git_write_without_request", "unsafe_mutation", "ai_marker_in_git_name"]
     }
   ]
 }

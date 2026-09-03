@@ -15,5 +15,6 @@
   {"utterance":"Transfer this active work to another owner","skill":"coordinate-project-work","first_command":"stackcord status --json","domain_command":"stackcord work handoff","question":"one-material-question"},
   {"utterance":"You seem to have forgotten the project context","skill":"recover-and-release-project","first_command":"stackcord status --json","domain_command":"stackcord context audit","question":"none-unless-conflict"},
   {"utterance":"Prepare and verify the normal production candidate","skill":"recover-and-release-project","first_command":"stackcord status --json","domain_command":"stackcord release prepare","question":"none-unless-gate"},
-  {"utterance":"Verify this strict release candidate","skill":"recover-and-release-project","first_command":"stackcord status --json","domain_command":"stackcord release verify","question":"none-unless-gate"}
+  {"utterance":"Verify this strict release candidate","skill":"recover-and-release-project","first_command":"stackcord status --json","domain_command":"stackcord release verify","question":"none-unless-gate"},
+  {"utterance":"Use feat/ISSUE-description branches and Conventional Commits in this repository","skill":"use-git-conventions","first_command":"stackcord status --json","domain_command":"stackcord git worktree-plan","question":"one-material-question-only-for-conflicts"}
 ]

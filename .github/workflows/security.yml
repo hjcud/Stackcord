@@ -23,7 +23,7 @@ jobs:
           languages: go
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
-          go-version: 1.26.5
+          go-version: 1.26.6
           cache-dependency-path: cli/go.sum
       - name: Build for CodeQL
         working-directory: cli
@@ -44,7 +44,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
-          go-version: 1.26.5
+          go-version: 1.26.6
           cache-dependency-path: cli/go.sum
       - name: Race tests
         working-directory: cli
@@ -63,7 +63,20 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         with:
           persist-credentials: false
-      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+          fetch-depth: 0
+      - name: Detect Go dependency changes
+        id: dependency-changes
+        shell: bash
+        run: |
+          if git diff --quiet \
+            "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" \
+            -- ':(glob)**/go.mod' ':(glob)**/go.sum'; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.dependency-changes.outputs.changed == 'true'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0

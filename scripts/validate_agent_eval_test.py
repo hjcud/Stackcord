@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 import tempfile
 import unittest
@@ -21,7 +22,7 @@ class AgentEvalContractTest(unittest.TestCase):
     def test_checked_in_evaluation_contract_is_valid(self):
         self.assertEqual([], validate(ROOT))
 
-    def test_scenarios_cover_the_five_public_skills(self):
+    def test_scenarios_cover_the_six_public_skills(self):
         scenarios = load_document(ROOT / "evals/agent-behavior/scenarios.yaml")["scenarios"]
         self.assertEqual(
             {
@@ -30,6 +31,7 @@ class AgentEvalContractTest(unittest.TestCase):
                 "plan-project-work",
                 "coordinate-project-work",
                 "recover-and-release-project",
+                "use-git-conventions",
             },
             {scenario["expected_skill"] for scenario in scenarios},
         )
@@ -81,7 +83,7 @@ class AgentEvalContractTest(unittest.TestCase):
             run_all=True,
             allow_external_research=True,
         )
-        self.assertEqual(9, len(selected))
+        self.assertEqual(10, len(selected))
 
     def test_normal_selection_is_limited_to_three_and_research_is_not_implicit(self):
         scenarios = load_document(ROOT / "evals/agent-behavior/scenarios.yaml")["scenarios"]
@@ -148,7 +150,7 @@ class AgentEvalContractTest(unittest.TestCase):
         environment = evaluation_environment(base, cli)
 
         self.assertEqual(str(cli), environment["STACKCORD_CLI"])
-        self.assertEqual(f"{cli.parent}:/usr/bin", environment["PATH"])
+        self.assertEqual(f"{cli.parent}{os.pathsep}/usr/bin", environment["PATH"])
         self.assertEqual("0", environment["GIT_TERMINAL_PROMPT"])
         self.assertEqual({"PATH": "/usr/bin", "HOME": "/tmp/home"}, base)
 

@@ -121,10 +121,11 @@ Plugin이 없어도 생성된 프로젝트의 repo-local Skill과 Markdown fallb
 | `.harness/workspaces.yaml` | root·UI·frontend·backend 저장소 관계 |
 | `.harness/work/provider.yaml` | 선택한 live task 상태 원본 |
 | `.harness/governance.yaml` | 제품 책임자와 보호할 제품 의미 |
+| `.harness/git-conventions.yaml` | Branch·commit·PR·issue 표현에 사용하는 선택적 저장소 규칙 |
 | `.harness/local/context/` | Git에 올리지 않고 언제든 재생성할 수 있는 context cache |
 | `.agents/skills/use-project-harness/` | Plugin 없이 프로젝트를 이어가기 위한 repo-local Skill |
 
-사용자에게 보이는 다섯 Skill은 `start-project`, `continue-project`, `plan-project-work`, `coordinate-project-work`, `recover-and-release-project`입니다. 이름을 외울 필요는 없습니다. 기본 mode는 일반 팀 협업에 필요한 검증만 제공하며, `strict-release`는 선택한 조직에만 SBOM·provenance·signature 같은 강한 공급망 검증을 추가합니다.
+사용자에게 보이는 여섯 Skill은 `start-project`, `continue-project`, `plan-project-work`, `coordinate-project-work`, `recover-and-release-project`, `use-git-conventions`입니다. Git convention Skill은 개발자가 알려준 규칙을 저장하고 branch·commit·PR·issue를 만들거나 검사하기 전에 다시 사용합니다. Skill 이름을 외울 필요는 없습니다. 기본 mode는 일반 팀 협업에 필요한 검증만 제공하며, `strict-release`는 선택한 조직에만 SBOM·provenance·signature 같은 강한 공급망 검증을 추가합니다.
 
 ## 더 알아보기
 

@@ -36,7 +36,7 @@ Both Korean and English READMEs use this order:
    behavior;
 9. installation by asking Codex to use the public repository link, with manual
    marketplace commands as a fallback;
-10. generated project structure, five Skills, core versus strict release, and
+10. generated project structure, six Skills, repository Git conventions, core versus strict release, and
     links to detailed guides.
 
 The README should stay roughly within 140–180 lines per language. Tables replace
@@ -84,4 +84,3 @@ paths and public contracts required for Plugin-less continuation.
 - Korean and English structures match semantically.
 - Documentation parity, public-contract validation, and documented-command
   validation continue to pass.
-

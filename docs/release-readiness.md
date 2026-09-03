@@ -4,7 +4,7 @@ This document defines the evidence boundary for the focused full-stack continuit
 
 ## Product boundary
 
-The product has five non-overlapping natural-language Skills and one generated repo-local Skill. Conversation, product judgment, proactive questions, and optional tool selection stay flexible in the Skills. The Go CLI owns only observable state, safe writes, stable identity, semantic collision, reservation, evidence, and exact release-candidate checks.
+The product has five project-lifecycle Skills, one focused Git-convention Skill, and one generated repo-local Skill. Conversation, product judgment, proactive questions, and optional tool selection stay flexible in the Skills. The Go CLI owns only observable state, safe writes, stable identity, configured branch validation, semantic collision, reservation, evidence, and exact release-candidate checks.
 
 Normal use is proportional. A small private documentation change needs no issue, reservation, worktree, or invented TDD test. Shared, interruptible, cross-repository, policy, contract, database, migration, UI-flow, dependency, or pointer work uses a selected task source plus the Git compare-and-swap semantic reservation.
 
@@ -19,7 +19,7 @@ The latest local release audit must be refreshed after any product change. The 2
 - multi-repository dogfood passed **23/23** assertions using actual root/frontend/backend repositories, submodules, bare remotes, Git reservations, TDD evidence, pointer integration, clean-clone recovery, contract conflicts, provider reconciliation, and exact RC checks (**54** CLI calls and **124** Git calls);
 - **52** Python validator tests passed, followed by Plugin, generated repo-local Skill, Markdown fallback, Hook, English/Korean documentation (**12** pairs), agent-evaluation schema, and high-confidence secret/security validation;
 - CGO-free macOS amd64/arm64 and Windows amd64/arm64 builds passed. The resulting SHA-256 values were `8a41c35841ef997f59407442d7492152b407c40f1733286e771987bb83726518`, `559e289c2d0f7978e718722169632206c7e03e5386fd5e6f582a01adf4098fa8`, `58ebe5351dadcbd511cc802bc5fa1b6e72f296d4171445dc767712c46a39c38f`, and `bd52997acca6a9b78ba4ee4b868c9cdff9db35438aadabc69f139e2bbac9601e` respectively;
-- the pre-existing isolated Codex behavior audit recorded **9/9** once as initial quality evidence. It is historical, ignored local evidence rather than a current CI or release result. CI never invokes the model; a Skill behavior change selects one related scenario, while all nine require the explicit `--all --allow-external-research` opt-in.
+- the pre-existing isolated Codex behavior audit recorded **9/9** once as initial quality evidence. It is historical, ignored local evidence rather than a current CI or release result and predates the Git-convention scenario. CI never invokes the model; a Skill behavior change selects one related scenario, while the full suite requires the explicit `--all --allow-external-research` opt-in.
 
 Local transcripts and generated diagnostic state stay under `.harness/local/` and are ignored. The checked-in scenario, rubric, dogfood runner, baseline, and test code make the evidence reproducible without publishing private transcripts.
 

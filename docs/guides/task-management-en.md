@@ -33,6 +33,30 @@ An issue assignment is not an exclusive lock. GitHub can represent multiple assi
 
 GitHub Issues is not fixed as the default, and Jira or Beads is not enabled merely because its name appears in a document. The AI first detects installed connectors and CLIs, checks current official maintenance and security information when selection matters, compares two or three realistic candidates, explains trade-offs, and connects only the user's choice.
 
+## Keep repository Git conventions
+
+Tell Stackcord the branch, commit, pull-request, and issue conventions once. The `use-git-conventions` Skill first checks `CONTRIBUTING.md`, `AGENTS.md`, and existing pull-request or issue templates. When the rules are consistent, it stores only their normalized form in `.harness/git-conventions.yaml` and reuses it before later Git work.
+
+```yaml
+schema_version: 1
+branch:
+  format: "{type}/{issue}-{description}"
+  types: [feat, fix]
+commit:
+  title_format: "{type}({scope}): {subject}"
+  types: [feat, fix]
+  scopes: [api, ui]
+  max_length: 72
+pull_request:
+  title_format: "[{issue}] {title}"
+  required_sections: [Summary, Test plan]
+issue:
+  title_format: "[{type}] {title}"
+  required_sections: [Problem, Acceptance]
+```
+
+The file is optional. Without it, existing Stackcord branch behavior remains unchanged and the AI does not invent commit, pull-request, or issue requirements. Repository conventions never relax safe Git-reference checks or authorize issue and pull-request writes. If contribution files conflict, the AI reports the conflict and asks which rule should win.
+
 ## Know what is stored
 
 - `.harness/work/definitions/<work-id>.yaml` is the committed executable checklist and semantic scope.
@@ -53,4 +77,4 @@ If a contributor runs out of tokens, changes computers, or returns later, they s
 
 If the provider is unavailable, the AI reports unknown and offers reconnection or an explicit decision to switch the single provider. It does not silently copy status into Git-local. If the provider update succeeds but Git reservation compare-and-swap loses a race, no branch work begins; the AI refreshes ownership and conflict scope. If the external status changes without matching semantic coordination, integration and release remain blocked until the exact revisions agree.
 
-Branches, commits, and pull requests use the team's normal conventions, for example `feature/account-recovery`, `feat(account): add recovery challenge`, and “Add account recovery flow.” They never include AI, agent, model, or tool branding.
+Branches, commits, and pull requests use the team's stored conventions, for example `feature/account-recovery`, `feat(account): add recovery challenge`, and “Add account recovery flow.” They never include AI, agent, model, or tool branding.
