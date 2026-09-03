@@ -121,10 +121,11 @@ A generated project can continue in another Codex environment without the Plugin
 | `.harness/workspaces.yaml` | Root, UI, frontend, and backend repository topology |
 | `.harness/work/provider.yaml` | Selected live task status source |
 | `.harness/governance.yaml` | Product authorities and protected product meaning |
+| `.harness/git-conventions.yaml` | Optional repository rules for branch, commit, pull-request, and issue presentation |
 | `.harness/local/context/` | Reproducible context cache excluded from Git |
 | `.agents/skills/use-project-harness/` | Repo-local Skill for continuing without the Plugin |
 
-The five user-facing Skills are `start-project`, `continue-project`, `plan-project-work`, `coordinate-project-work`, and `recover-and-release-project`. Users do not memorize their names. Core mode provides the checks ordinary teams need; `strict-release` adds stronger supply-chain controls such as SBOM, provenance, and signatures only for organizations that select it.
+The six user-facing Skills are `start-project`, `continue-project`, `plan-project-work`, `coordinate-project-work`, `recover-and-release-project`, and `use-git-conventions`. The Git-convention Skill records rules supplied by the developer and reuses them before creating or validating a branch, commit, pull request, or issue. Users do not memorize Skill names. Core mode provides the checks ordinary teams need; `strict-release` adds stronger supply-chain controls such as SBOM, provenance, and signatures only for organizations that select it.
 
 ## Learn more
 

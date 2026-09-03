@@ -82,6 +82,23 @@ func TestPlanWorktreeUsesConventionalBranchAndOutsidePath(t *testing.T) {
 	}
 }
 
+func TestPlanWorktreeUsesRepositoryGitConvention(t *testing.T) {
+	root, _ := repositoryFixture(t)
+	require.NoError(t, os.MkdirAll(filepath.Join(root, ".harness"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(root, ".harness", "git-conventions.yaml"), []byte(`schema_version: 1
+branch:
+  format: "{type}/{issue}-{description}"
+  types: [feat, fix]
+`), 0o600))
+
+	plan, err := gitx.PlanWorktree(gitx.WorktreeChange{Root: root, Branch: "feat/OPS-42-account-recovery"})
+	require.NoError(t, err)
+	require.Equal(t, "feat/OPS-42-account-recovery", plan.Commands[0].Args[3])
+
+	_, err = gitx.PlanWorktree(gitx.WorktreeChange{Root: root, Branch: "feature/account-recovery"})
+	require.ErrorContains(t, err, "configured Git convention")
+}
+
 func TestInspectReportsExistingWorktrees(t *testing.T) {
 	root, _ := repositoryFixture(t)
 	target := filepath.Join(t.TempDir(), "account-recovery")

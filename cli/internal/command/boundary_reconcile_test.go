@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/kcrmin/Stackcord/cli/internal/command"
 	contextpkg "github.com/kcrmin/Stackcord/cli/internal/context"
@@ -42,6 +43,9 @@ func TestCanonicalUIReconcilePersistsStaleMappings(t *testing.T) {
 	runBoundaryCommand(t, "project", "init", "--root", root, "--id", "project.ui-reconcile", "--locale", "en", "--apply", "--json")
 	first := boundaryUIArchive(t, "<main>Refund v1</main>")
 	second := boundaryUIArchive(t, "<main>Refund v2</main>")
+	firstFetchedAt := time.Now().Add(-time.Hour)
+	require.NoError(t, os.Chtimes(first, firstFetchedAt, firstFetchedAt))
+	require.NoError(t, os.Chtimes(second, firstFetchedAt.Add(time.Minute), firstFetchedAt.Add(time.Minute)))
 	imported := runBoundaryCommand(t, "ui", "import", "--root", root, "--archive", first, "--id", "ui.external.refund", "--authority", "canonical", "--version", "design-1", "--ref", "ui.refund", "--consumer", "workspace.frontend", "--apply", "--json")
 	require.Contains(t, imported, `"status":"passed"`)
 

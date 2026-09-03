@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kcrmin/Stackcord/cli/internal/convention"
 	contextpkg "github.com/kcrmin/Stackcord/cli/internal/context"
 	"github.com/kcrmin/Stackcord/cli/internal/domain"
-	"github.com/kcrmin/Stackcord/cli/internal/gitx"
 	"github.com/kcrmin/Stackcord/cli/internal/operation"
 	"github.com/kcrmin/Stackcord/cli/internal/policy"
 	"go.yaml.in/yaml/v3"
@@ -29,8 +29,12 @@ type StartWorkRequest struct {
 // StartWork creates a reviewable claim and branch checkpoint plan after conflict preflight.
 func StartWork(request StartWorkRequest) operation.Plan {
 	plan := operation.Plan{ID: "start-" + request.ClaimID, Root: request.Root}
-	if request.Root == "" || !ValidWorkID(request.WorkID) || !validClaimID(request.ClaimID) || request.Owner == "" || request.Candidate.Repository == "" || !request.ExpiresAt.After(request.Candidate.Now) || gitx.ValidateBranch(request.Branch) != nil {
+	if request.Root == "" || !ValidWorkID(request.WorkID) || !validClaimID(request.ClaimID) || request.Owner == "" || request.Candidate.Repository == "" || !request.ExpiresAt.After(request.Candidate.Now) {
 		plan.Blockers = []domain.Item{{Code: "work.request-invalid", Message: "Work and claim IDs, owner, repository, conventional branch, and a future lease are required."}}
+		return plan
+	}
+	if err := convention.ValidateBranch(request.Root, request.Branch); err != nil {
+		plan.Blockers = []domain.Item{{Code: "work.branch-invalid", Message: err.Error(), Refs: []string{request.Branch}}}
 		return plan
 	}
 	report := policy.CheckConflict(request.Candidate, request.ActiveClaims, request.Snapshot)

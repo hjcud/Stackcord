@@ -61,7 +61,7 @@ The default product owns:
 7. executable work definitions and lifecycle;
 8. one selected live task source and truthful provider reconciliation;
 9. semantic conflict preflight and integration ordering;
-10. safe Git, branch, worktree, and submodule operations;
+10. safe Git, repository-specific branch conventions, worktree, and submodule operations;
 11. canonical Git DBML and isolated dbdiagram proposals;
 12. external UI source quarantine and authority;
 13. TDD and evidence binding;
@@ -142,7 +142,9 @@ An external mockup may supply the UI baseline. Its authority is registered befor
 
 ## 6. User-facing Skills
 
-The Codex Plugin exposes five non-overlapping Skills.
+The Codex Plugin exposes six focused Skills. The Git-convention Skill is a
+cross-cutting formatter and preflight for Git objects; it does not replace the
+five project-lifecycle Skills.
 
 1. `start-project`
    - discovers or imports service meaning;
@@ -175,9 +177,15 @@ The Codex Plugin exposes five non-overlapping Skills.
    - binds technical and user validation to the same candidate;
    - applies strict release only when enabled.
 
+6. `use-git-conventions`
+   - discovers existing contribution, pull-request, and issue rules;
+   - records user-approved repository conventions under `.harness/`;
+   - applies them before branches, commits, pull requests, or issues are created;
+   - keeps external writes and history rewrites separately authorized.
+
 Every mutating Skill starts with the same recovery preflight. A separate overlapping “memory” or “audit” Skill is not added.
 
-Generated repositories contain one compact repo-local entry Skill that routes the same five natural-language intents. Plugin-less continuity must not depend on global installation.
+Generated repositories contain one compact repo-local entry Skill that routes the five project-lifecycle intents and applies the repository convention before Git-object work. Plugin-less continuity must not depend on global installation.
 
 ## 7. Repository architecture
 
@@ -202,6 +210,7 @@ service-orchestration/
 ├── .harness/
 │   ├── project.yaml
 │   ├── profile.yaml
+│   ├── git-conventions.yaml  # optional
 │   ├── sources.yaml
 │   ├── workspaces.yaml
 │   ├── work/
@@ -227,6 +236,7 @@ The root is created or adopted once the service identity and repository boundary
 Committed canonical state:
 
 - project and workspace identities;
+- optional repository Git conventions;
 - specs and contracts;
 - work definitions and provider mappings;
 - approved integration and release evidence references.
@@ -428,6 +438,13 @@ Default strategy:
 - release branches only when explicitly justified;
 - frequent integration rather than mandatory traditional Git Flow.
 
+When `.harness/git-conventions.yaml` exists, its normalized branch, commit,
+pull-request, and issue presentation rules replace only these default naming
+examples. Git reference safety, explicit external-write approval, and the ban on
+hidden history rewrites remain invariant. Existing `CONTRIBUTING.md`, `AGENTS.md`,
+and provider templates are inspected before the convention file is created or
+changed; unresolved conflicts require a user decision.
+
 Branch, commit, PR, and tag names contain no AI, agent, Codex, GPT, model, or generated-by markers. Examples:
 
 - `feature/account-recovery`
@@ -571,7 +588,7 @@ The CLI never decides product desirability, business trade-offs, question phrasi
 
 ## 19. Distribution and portability
 
-The first public Plugin is fully supported on Codex. It contains the five Skills, correct lifecycle hooks, and a reliable way to invoke the matching macOS or Windows CLI build.
+The first public Plugin is fully supported on Codex. It contains the six Skills, correct lifecycle hooks, and a reliable way to invoke the matching macOS or Windows CLI build.
 
 Generated repositories remain usable without the Plugin through a repo-local Agent Skill and Markdown fallback. Other AI clients receive small adapters that point to canonical instructions; automatic hooks and connectors are advertised only after native verification.
 
@@ -588,7 +605,7 @@ Keep and strengthen:
 - real Git, worktree, and submodule inspection;
 - semantic conflict scopes;
 - contract, DBML, UI quarantine, atomic operations, and release digest cores;
-- five existing user-facing Skill names;
+- the five existing project-lifecycle Skill names and the focused `use-git-conventions` Skill;
 - bilingual output and strict-release isolation.
 
 Replace or complete:

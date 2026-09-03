@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Git Conventions"
+  short_description: "Apply repository branch, commit, PR, and issue rules"
+  default_prompt: "Use $use-git-conventions to apply this repository's Git conventions to my next change."

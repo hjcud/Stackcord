@@ -11,11 +11,11 @@ codex plugin marketplace add kcrmin/Stackcord --ref v1.0.0
 codex plugin add stackcord@stackcord
 ```
 
-Start a new Codex conversation after installation so the five Stackcord Skills and lifecycle hooks are loaded from the installed snapshot.
+Start a new Codex conversation after installation so the six Stackcord Skills and lifecycle hooks are loaded from the installed snapshot.
 
 ## Install a verified release bundle
 
-Download the Plugin zip for the current platform together with `checksums.txt`, verify its SHA-256, and unpack it. The bundle contains `.agents/plugins/marketplace.json`, the five Skills, lifecycle hooks, project templates, both bootstrap scripts, and `distribution/platform.json`. That platform record binds the Plugin version to the matching CLI asset and checksum URL.
+Download the Plugin zip for the current platform together with `checksums.txt`, verify its SHA-256, and unpack it. The bundle contains `.agents/plugins/marketplace.json`, the six Skills, lifecycle hooks, project templates, both bootstrap scripts, and `distribution/platform.json`. That platform record binds the Plugin version to the matching CLI asset and checksum URL.
 
 Ask the AI “Install this verified bundle locally.” It can inspect the platform record and run the matching checksum-first bootstrap. To install the unpacked Plugin through Codex CLI, add its directory as a local marketplace and install the listed Plugin from that marketplace:
 

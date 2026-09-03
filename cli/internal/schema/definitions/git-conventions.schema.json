@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stackcord.invalid/schemas/git-conventions.schema.json",
+  "type": "object",
+  "required": ["schema_version"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "branch": { "$ref": "#/$defs/branch" },
+    "commit": { "$ref": "#/$defs/commit" },
+    "pull_request": { "$ref": "#/$defs/content" },
+    "issue": { "$ref": "#/$defs/content" }
+  },
+  "anyOf": [
+    { "required": ["branch"] },
+    { "required": ["commit"] },
+    { "required": ["pull_request"] },
+    { "required": ["issue"] }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "portable_identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "maxLength": 64
+    },
+    "single_line": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\\r\\n]+$"
+    },
+    "branch": {
+      "type": "object",
+      "required": ["format", "types"],
+      "properties": {
+        "format": { "$ref": "#/$defs/single_line" },
+        "types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/portable_identifier" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "commit": {
+      "type": "object",
+      "required": ["title_format", "types", "scopes", "max_length"],
+      "properties": {
+        "title_format": { "$ref": "#/$defs/single_line" },
+        "types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/portable_identifier" }
+        },
+        "scopes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/portable_identifier" }
+        },
+        "max_length": { "type": "integer", "minimum": 1, "maximum": 200 }
+      },
+      "additionalProperties": false
+    },
+    "content": {
+      "type": "object",
+      "required": ["title_format", "required_sections"],
+      "properties": {
+        "title_format": { "$ref": "#/$defs/single_line" },
+        "required_sections": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/single_line" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

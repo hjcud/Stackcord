@@ -29,6 +29,19 @@ func TestCreateWorktreeRefusesDirtyBaseAndDuplicateBranch(t *testing.T) {
 	require.Contains(t, gitResultCodes(duplicate.Blockers), "git.branch-in-use")
 }
 
+func TestCreateWorktreeAppliesRepositoryGitConvention(t *testing.T) {
+	root, _ := repositoryFixture(t)
+	require.NoError(t, os.MkdirAll(filepath.Join(root, ".harness"), 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(root, ".harness", "git-conventions.yaml"), []byte("schema_version: 1\nbranch:\n  format: \"{type}/{issue}-{description}\"\n  types: [feat, fix]\n"), 0o600))
+	runGit(t, root, "add", ".harness/git-conventions.yaml")
+	runGit(t, root, "commit", "-m", "feat: configure Git conventions")
+
+	result := gitx.CreateWorktree(context.Background(), gitx.CreateWorktreeRequest{Root: root, Branch: "feat/OPS-42-account-recovery", Base: "main"})
+
+	require.Equal(t, domain.StatusPassed, result.Status, result.Blockers)
+	require.Equal(t, "feat/OPS-42-account-recovery", result.Facts[1].Message)
+}
+
 func TestCreateWorktreeRejectsTargetInsideAnotherRepository(t *testing.T) {
 	root, _ := repositoryFixture(t)
 	other, _ := repositoryFixture(t)
