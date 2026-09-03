@@ -18,6 +18,30 @@ Stackcord records the selected Git review provider, repository, allowed account 
 
 Changing the authority list is protected by the current list. A contributor cannot add themselves and approve that same change. Git `user.name` and `user.email` are display metadata and never establish authority.
 
+## Safely changing product authorities
+
+Plan an addition without changing the policy:
+
+```sh
+stackcord governance authority add --root . --subject user:alex --json
+```
+
+The plan reports the exact policy fingerprint and the authority list before and after the proposal. After reviewing them, apply that exact plan:
+
+```sh
+stackcord governance authority add --root . --subject user:alex --expected-policy sha256:0000000000000000000000000000000000000000000000000000000000000000 --apply --json
+```
+
+Use the fingerprint returned by the plan, not the example value. Removing an authority uses the same flow:
+
+```sh
+stackcord governance authority remove --root . --subject user:alex --json
+```
+
+Applying a plan refuses stale fingerprints, duplicate additions, unknown removals, removal of the final authority, and changes that would make the approval minimum impossible. It preserves unrelated policy fields and YAML comments.
+
+The applied file is still a governance proposal. Commit it and complete the configured provider review before integration or release; the local write never proves identity or grants approval by itself.
+
 ## Contributor and reviewer flow
 
 ```text
