@@ -56,7 +56,7 @@ func newGovernanceAuthorityMutation(action governance.AuthorityAction, version s
 		},
 	}
 	command.Flags().StringVar(&request.Root, "root", ".", "project path or any path inside the orchestration root")
-	command.Flags().StringVar(&request.Subject, "subject", "", "normalized product authority such as user:alice or team:product")
+	command.Flags().StringArrayVar(&request.Subjects, "subject", nil, "normalized product authority; repeat for multiple user: or team: subjects")
 	command.Flags().StringVar(&request.ExpectedPolicyFingerprint, "expected-policy", "", "exact governance policy fingerprint from the reviewed plan")
 	command.Flags().BoolVar(&apply, "apply", false, "write the reviewed authority proposal")
 	_ = command.MarkFlagRequired("subject")
@@ -66,7 +66,7 @@ func newGovernanceAuthorityMutation(action governance.AuthorityAction, version s
 func authorityChangeFacts(change governance.AuthorityChange) []domain.Item {
 	return []domain.Item{
 		{Code: "governance.authority-action", Message: string(change.Action)},
-		{Code: "governance.authority-subject", Message: change.Subject},
+		{Code: "governance.authority-subjects", Message: "Product authorities included in this change.", Refs: change.Subjects},
 		{Code: "governance.policy-fingerprint", Message: change.PolicyFingerprint},
 		{Code: "governance.authorities-before", Message: "Configured product authorities before the proposal.", Refs: change.Before},
 		{Code: "governance.authorities-after", Message: "Configured product authorities after the proposal.", Refs: change.After},

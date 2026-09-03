@@ -127,6 +127,7 @@ class PluginContractTest(unittest.TestCase):
         self.assertIn("stackcord governance check --json", coordinate)
         self.assertIn("stackcord governance authority add|remove", coordinate)
         self.assertIn("--expected-policy", coordinate)
+        self.assertIn("Repeat `--subject`", coordinate)
         self.assertIn("Git display name and email", coordinate)
         self.assertIn("may not present it as approved", coordinate)
         self.assertIn("fresh product-authority approval", release)

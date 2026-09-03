@@ -77,6 +77,25 @@ func TestGovernanceAuthorityAddPlansThenAppliesAgainstReviewedPolicy(t *testing.
 	require.Equal(t, "governance.request-review", applied.NextActions[0].Code)
 }
 
+func TestGovernanceAuthorityAddPlansAndAppliesMultipleSubjectsTogether(t *testing.T) {
+	root := configuredGovernanceProject(t, []string{"user:product-owner"}, 1)
+	subjects := []string{"user:second-owner", "team:platform"}
+
+	planned := runGovernanceAuthoritySubjectsCommand(t, root, "add", subjects)
+	require.Equal(t, domain.StatusPassed, planned.Status)
+	require.ElementsMatch(t, subjects, factRefs(planned.Facts, "governance.authority-subjects"))
+	require.ElementsMatch(t, []string{"user:product-owner", "user:second-owner", "team:platform"}, factRefs(planned.Facts, "governance.authorities-after"))
+	require.NotContains(t, readGovernancePolicy(t, root), "user:second-owner")
+	require.NotContains(t, readGovernancePolicy(t, root), "team:platform")
+
+	policyFingerprint := factMessage(planned.Facts, "governance.policy-fingerprint")
+	applied := runGovernanceAuthoritySubjectsCommand(t, root, "add", subjects, "--expected-policy", policyFingerprint, "--apply")
+	require.Equal(t, domain.StatusPassed, applied.Status)
+	updated := readGovernancePolicy(t, root)
+	require.Contains(t, updated, "user:second-owner")
+	require.Contains(t, updated, "team:platform")
+}
+
 func TestGovernanceAuthorityRemoveAppliesWithoutLockingOutTheProject(t *testing.T) {
 	root := configuredGovernanceProject(t, []string{"user:first-owner", "user:second-owner"}, 1)
 
@@ -89,6 +108,21 @@ func TestGovernanceAuthorityRemoveAppliesWithoutLockingOutTheProject(t *testing.
 	require.Contains(t, policy, "user:first-owner")
 	require.NotContains(t, policy, "user:second-owner")
 	require.Contains(t, policy, "# Primary authority note.")
+}
+
+func TestGovernanceAuthorityRemoveAppliesMultipleSubjectsTogether(t *testing.T) {
+	root := configuredGovernanceProject(t, []string{"user:first-owner", "user:second-owner", "team:platform"}, 1)
+	subjects := []string{"user:second-owner", "team:platform"}
+
+	planned := runGovernanceAuthoritySubjectsCommand(t, root, "remove", subjects)
+	policyFingerprint := factMessage(planned.Facts, "governance.policy-fingerprint")
+	applied := runGovernanceAuthoritySubjectsCommand(t, root, "remove", subjects, "--expected-policy", policyFingerprint, "--apply")
+
+	require.Equal(t, domain.StatusPassed, applied.Status)
+	policy := readGovernancePolicy(t, root)
+	require.Contains(t, policy, "user:first-owner")
+	require.NotContains(t, policy, "user:second-owner")
+	require.NotContains(t, policy, "team:platform")
 }
 
 func TestGovernanceAuthorityRemoveRejectsLockoutAndStalePlans(t *testing.T) {
@@ -136,6 +170,18 @@ func TestGovernanceAuthorityChangeRejectsInvalidAndNoopRequests(t *testing.T) {
 			require.Equal(t, test.code, result.Blockers[0].Code)
 		})
 	}
+
+	duplicate := runGovernanceAuthoritySubjectsCommand(t, root, "add", []string{"user:new-owner", "user:new-owner"})
+	require.Equal(t, domain.StatusBlocked, duplicate.Status)
+	require.Equal(t, "governance.authority-duplicate", duplicate.Blockers[0].Code)
+	require.NotContains(t, readGovernancePolicy(t, root), "user:new-owner")
+
+	mixed := runGovernanceAuthoritySubjectsCommand(t, root, "add", []string{"user:new-owner", "user:first-owner"})
+	policyFingerprint := factMessage(mixed.Facts, "governance.policy-fingerprint")
+	mixedApply := runGovernanceAuthoritySubjectsCommand(t, root, "add", []string{"user:new-owner", "user:first-owner"}, "--expected-policy", policyFingerprint, "--apply")
+	require.Equal(t, domain.StatusBlocked, mixedApply.Status)
+	require.Equal(t, "governance.authority-exists", mixedApply.Blockers[0].Code)
+	require.NotContains(t, readGovernancePolicy(t, root), "user:new-owner")
 }
 
 func configuredGovernanceProject(t *testing.T, authorities []string, minimum int) string {
@@ -159,14 +205,31 @@ func configuredGovernanceProject(t *testing.T, authorities []string, minimum int
 
 func runGovernanceAuthorityCommand(t *testing.T, root, action, subject string, extra ...string) domain.Result {
 	t.Helper()
+	return runGovernanceAuthoritySubjectsCommand(t, root, action, []string{subject}, extra...)
+}
+
+func runGovernanceAuthoritySubjectsCommand(t *testing.T, root, action string, subjects []string, extra ...string) domain.Result {
+	t.Helper()
 	var output bytes.Buffer
 	cmd := command.New("1.0.0", &output, &bytes.Buffer{})
-	args := []string{"governance", "authority", action, "--root", root, "--subject", subject, "--json"}
+	args := []string{"governance", "authority", action, "--root", root, "--json"}
+	for _, subject := range subjects {
+		args = append(args, "--subject", subject)
+	}
 	cmd.SetArgs(append(args, extra...))
 	require.NoError(t, cmd.Execute())
 	var result domain.Result
 	require.NoError(t, json.Unmarshal(output.Bytes(), &result), output.String())
 	return result
+}
+
+func factRefs(items []domain.Item, code string) []string {
+	for _, item := range items {
+		if item.Code == code {
+			return item.Refs
+		}
+	}
+	return nil
 }
 
 func readGovernancePolicy(t *testing.T, root string) string {

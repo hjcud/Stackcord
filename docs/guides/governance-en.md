@@ -20,25 +20,25 @@ Changing the authority list is protected by the current list. A contributor cann
 
 ## Safely changing product authorities
 
-Plan an addition without changing the policy:
+Plan one or more additions without changing the policy by repeating `--subject`:
 
 ```sh
-stackcord governance authority add --root . --subject user:alex --json
+stackcord governance authority add --root . --subject user:alex --subject team:platform --json
 ```
 
 The plan reports the exact policy fingerprint and the authority list before and after the proposal. After reviewing them, apply that exact plan:
 
 ```sh
-stackcord governance authority add --root . --subject user:alex --expected-policy sha256:0000000000000000000000000000000000000000000000000000000000000000 --apply --json
+stackcord governance authority add --root . --subject user:alex --subject team:platform --expected-policy sha256:0000000000000000000000000000000000000000000000000000000000000000 --apply --json
 ```
 
-Use the fingerprint returned by the plan, not the example value. Removing an authority uses the same flow:
+Use the fingerprint returned by the plan, not the example value, and pass the same subjects when applying it. Removing one or more authorities uses the same flow:
 
 ```sh
-stackcord governance authority remove --root . --subject user:alex --json
+stackcord governance authority remove --root . --subject user:alex --subject team:platform --json
 ```
 
-Applying a plan refuses stale fingerprints, duplicate additions, unknown removals, removal of the final authority, and changes that would make the approval minimum impossible. It preserves unrelated policy fields and YAML comments.
+Each plan is atomic: if any requested subject is invalid, duplicated, already present during addition, or absent during removal, none of the subjects are changed. Applying a plan also refuses stale fingerprints, removal of the final authority, and changes that would make the approval minimum impossible. It preserves unrelated policy fields and YAML comments.
 
 The applied file is still a governance proposal. Commit it and complete the configured provider review before integration or release; the local write never proves identity or grants approval by itself.
 

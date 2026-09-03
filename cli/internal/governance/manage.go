@@ -30,13 +30,13 @@ var authoritySubjectPattern = regexp.MustCompile(`^(?:user|team):[A-Za-z0-9][A-Z
 type AuthorityChangeRequest struct {
 	Root                      string
 	Action                    AuthorityAction
-	Subject                   string
+	Subjects                  []string
 	ExpectedPolicyFingerprint string
 }
 
 type AuthorityChange struct {
 	Action            AuthorityAction `json:"action"`
-	Subject           string          `json:"subject"`
+	Subjects          []string        `json:"subjects"`
 	PolicyFingerprint string          `json:"policy_fingerprint"`
 	Before            []string        `json:"before"`
 	After             []string        `json:"after"`
@@ -49,9 +49,21 @@ func PlanAuthorityChange(ctx context.Context, request AuthorityChangeRequest) (A
 		return AuthorityChange{}, operation.Plan{}, err
 	}
 	request.Root = located.Path
-	request.Subject = strings.TrimSpace(request.Subject)
-	plan := operation.Plan{ID: authorityOperationID(request.Action, request.Subject, ""), Root: request.Root}
-	change := AuthorityChange{Action: request.Action, Subject: request.Subject, Before: []string{}, After: []string{}}
+	duplicate := ""
+	seen := make(map[string]bool, len(request.Subjects))
+	subjects := make([]string, 0, len(request.Subjects))
+	for _, subject := range request.Subjects {
+		subject = strings.TrimSpace(subject)
+		if seen[subject] && duplicate == "" {
+			duplicate = subject
+		}
+		seen[subject] = true
+		subjects = append(subjects, subject)
+	}
+	sort.Strings(subjects)
+	request.Subjects = subjects
+	plan := operation.Plan{ID: authorityOperationID(request.Action, request.Subjects, ""), Root: request.Root}
+	change := AuthorityChange{Action: request.Action, Subjects: append([]string(nil), request.Subjects...), Before: []string{}, After: []string{}}
 
 	policy, err := LoadPolicy(request.Root)
 	if err != nil {
@@ -63,7 +75,7 @@ func PlanAuthorityChange(ctx context.Context, request AuthorityChangeRequest) (A
 		return AuthorityChange{}, operation.Plan{}, err
 	}
 	change.PolicyFingerprint = policyDigest(raw)
-	plan.ID = authorityOperationID(request.Action, request.Subject, change.PolicyFingerprint)
+	plan.ID = authorityOperationID(request.Action, request.Subjects, change.PolicyFingerprint)
 	change.Before = append([]string(nil), policy.ProductAuthorities...)
 	change.After = append([]string(nil), change.Before...)
 
@@ -78,8 +90,16 @@ func PlanAuthorityChange(ctx context.Context, request AuthorityChangeRequest) (A
 	if !policy.Enabled {
 		return block("governance.disabled", "Product governance must be enabled before authorities can be changed.")
 	}
-	if !authoritySubjectPattern.MatchString(request.Subject) {
-		return block("governance.authority-invalid", "Product authority must use a normalized user: or team: subject.", request.Subject)
+	if len(request.Subjects) == 0 {
+		return block("governance.authority-required", "At least one product authority subject is required.")
+	}
+	if duplicate != "" {
+		return block("governance.authority-duplicate", "Each product authority may appear only once in a change.", duplicate)
+	}
+	for _, subject := range request.Subjects {
+		if !authoritySubjectPattern.MatchString(subject) {
+			return block("governance.authority-invalid", "Product authority must use a normalized user: or team: subject.", subject)
+		}
 	}
 
 	current := make(map[string]bool, len(change.Before))
@@ -88,25 +108,33 @@ func PlanAuthorityChange(ctx context.Context, request AuthorityChangeRequest) (A
 	}
 	switch request.Action {
 	case AuthorityAdd:
-		if current[request.Subject] {
-			return block("governance.authority-exists", "Product authority is already configured.", request.Subject)
+		for _, subject := range request.Subjects {
+			if current[subject] {
+				return block("governance.authority-exists", "Product authority is already configured.", subject)
+			}
 		}
-		change.After = append(change.After, request.Subject)
+		change.After = append(change.After, request.Subjects...)
 	case AuthorityRemove:
-		if !current[request.Subject] {
-			return block("governance.authority-missing", "Product authority is not configured.", request.Subject)
+		for _, subject := range request.Subjects {
+			if !current[subject] {
+				return block("governance.authority-missing", "Product authority is not configured.", subject)
+			}
 		}
-		if len(change.Before) == 1 {
-			return block("governance.authority-lockout", "The final product authority cannot be removed while governance is enabled.", request.Subject)
+		if len(change.Before) == len(request.Subjects) {
+			return block("governance.authority-lockout", "The final product authority cannot be removed while governance is enabled.", request.Subjects...)
+		}
+		removed := make(map[string]bool, len(request.Subjects))
+		for _, subject := range request.Subjects {
+			removed[subject] = true
 		}
 		change.After = change.After[:0]
 		for _, subject := range change.Before {
-			if subject != request.Subject {
+			if !removed[subject] {
 				change.After = append(change.After, subject)
 			}
 		}
 		if policy.Approval.Minimum > len(change.After) {
-			return block("governance.approval-lockout", "Removing this authority would make the configured approval minimum impossible.", request.Subject)
+			return block("governance.approval-lockout", "Removing these authorities would make the configured approval minimum impossible.", request.Subjects...)
 		}
 	default:
 		return block("governance.authority-action-invalid", "Authority action must be add or remove.", string(request.Action))
@@ -180,8 +208,8 @@ func replaceAuthorities(raw []byte, authorities []string) ([]byte, error) {
 	return nil, fmt.Errorf("governance policy has no product_authorities field")
 }
 
-func authorityOperationID(action AuthorityAction, subject, policyFingerprint string) string {
-	sum := sha256.Sum256([]byte(string(action) + "\x00" + subject + "\x00" + policyFingerprint))
+func authorityOperationID(action AuthorityAction, subjects []string, policyFingerprint string) string {
+	sum := sha256.Sum256([]byte(string(action) + "\x00" + strings.Join(subjects, "\x00") + "\x00" + policyFingerprint))
 	return "governance-authority-" + string(action) + "-" + hex.EncodeToString(sum[:6])
 }
 
